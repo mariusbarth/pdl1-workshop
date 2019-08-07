@@ -64,7 +64,7 @@ knitr::opts_chunk$set(
 Implicit learning refers to the ability to adapt to regularities inherent in the environment in the absence of conscious awareness about the ongoing learning process itself or about the outcome of what is learned. 
 This ability is fundamental for human beings as it allows us to act optimally in stable environments with relatively little effort. 
 
-One of the most frequently utilized paradigms in the field of implicit learning is the serial reaction time task (SRTT) originating from Nissen and Bullemer [-@nissen_attentional_1987]. 
+One of the most frequently utilized paradigms in the field of implicit learning is the serial reaction time task (SRTT) originating from @nissen_attentional_1987. 
 In this standard SRTT, participants respond to locations on the screen which are mapped to spatially corresponding keys. 
 Participants are instructed to press the appropriate response key whenever an asterisk occurs at a certain screen location. 
 Unbeknownst to the participants, the locations of the asterisk follow a regular sequence. 
@@ -75,11 +75,11 @@ Even with more sensitive tests including the recently introduced wagering task [
 This dissociation between performance and expressible knowledge is generally assumed to indicate implicit learning.
 
 A central defining feature of explicit knowledge is that it is controllable, whereas implicit knowledge is thought not to be under conscious control.
-Destrebecqz and Cleeremans [-@destrebecqz_can_2001] utilized this distinction and applied the process-dissociation (PD) procedure to measure sequence learning.
+@destrebecqz_can_2001 utilized this distinction and applied the process-dissociation (PD) procedure to measure sequence learning.
 In process dissociation, performance in two conditions of the same task is contrasted:
 An inclusion condition, in which explicit and implicit knowledge both produce the same response, and an exclusion condition in which explicit and implicit knowledge produce opposing responses [for applications of the PD to sequence learning with the recognition task see @buchner_multinomial_1997;@buchner_role_1998].
 
-In their application to sequence learning, Destrebecqz and Cleeremans [-@destrebecqz_can_2001] used a generation task:
+In their application to sequence learning, @destrebecqz_can_2001 used a generation task:
 After SRTT training, participants are asked to generate a sequence of responses that is either as similar as possible to the learned sequence (in the inclusion condition), or a sequence as dissimilar as possible (exclusion condition).
 To the degree that explicit knowledge is available, the proportion of generated responses that match the learned sequence should differ between inclusion and exclusion.
 To the degree that implicit knowledge is available, the proportion of matching responses in the exclusion condition should be greater than a chance baseline or control condition.
@@ -129,8 +129,8 @@ The present study investigates the degree to which learning of such sequence-uns
 In applications of the PD to sequence learning, two variants of the generation task have been used: free generation [@destrebecqz_can_2001] and cued generation [@wilkinson_intentional_2004]. 
 In the free generation task, participants are asked to generate a longer stretch of responses without interruption [e.g., 96 trials in @destrebecqz_can_2001]. 
 In cued generation, on the other hand, on each trial, a small sequence of stimuli and responses is given as a cue by the experimenter, after which the participant is asked to generate the response that would occur next in the sequence.
-The results obtained with both tasks have been found to diverge: Using free generation task, Destrebecqz and Cleeremans [-@destrebecqz_can_2001] reported evidence for implicit knowledge (i.e., exclusion performance was above baseline). 
-In contrast, Wilkinson and Shanks [-@wilkinson_intentional_2004] could not replicate this $E>B$ finding using a cued generation task. 
+The results obtained with both tasks have been found to diverge: Using free generation task, @destrebecqz_can_2001 reported evidence for implicit knowledge (i.e., exclusion performance was above baseline). 
+In contrast, @wilkinson_intentional_2004 could not replicate this $E>B$ finding using a cued generation task. 
 The type of generation task may explain this discrepancy if cued generation artificially lowers (or free generation artificially boosts) exclusion performance [but see @fu_implicit_2008, for a reward-based explanation]. 
 Alternatively, the failure to find E>B in cued generation may be taken as evidence for the suboptimal sensitivity of the cued generation task.
 The present study compares free and cued generation tasks and their ability to detect learning of sequence-unspecific properties.
