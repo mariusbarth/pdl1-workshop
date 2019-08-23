@@ -310,7 +310,7 @@ out <- apa_print(
   aov_ez(data = tmp, dv = "SRI", id = "id", between = "material", within = "block")
 )
 
-par(mfrow = c(1, 2))
+par(mfrow = c(1, 2)) # place two different plots side-by-side
 
 # left panel: RTs in permuted and random material groups
 apa_lineplot(
