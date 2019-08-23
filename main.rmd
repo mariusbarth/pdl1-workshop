@@ -45,6 +45,7 @@ editor_options:
 ---
 
 ```{r setup, include = FALSE}
+# load packages
 library("papaja")
 library("afex")
 library("emmeans")
@@ -59,7 +60,6 @@ knitr::opts_chunk$set(
   , warning = FALSE
 )
 ```
-
 
 Implicit learning refers to the ability to adapt to regularities inherent in the environment in the absence of conscious awareness about the ongoing learning process itself or about the outcome of what is learned. 
 This ability is fundamental for human beings as it allows us to act optimally in stable environments with relatively little effort. 
@@ -181,7 +181,7 @@ The study realized a 3 (*material*: permuted vs. random vs. no-learning) $\times
 
 ## Participants
 
-```{r participants}
+```{r prepare-data}
 acquisition <- readRDS("data/acquisition-task.rds")
 generation <- readRDS("data/generation-task.rds")
 
@@ -212,19 +212,21 @@ variable_labels(generation) <- c(
   , PD_instruction = "PD instruction"
   , correct_SOC = "Correctly generated second-order conditional"
 )
+```
 
-# stats for participants section ----
-excluded_participants <- c(55, 74, 75, 126, 5, 7, 9, 12, 15)
+```{r participants}
+# stats for participants section
+excluded_participants <- unique(c(55, 74, 75, 126, 5, 7, 9, 12, 15))
 
 N <- length(unique(generation$id))
 
-n.excluded_participants <- length(unique(excluded_participants))
+n.excluded_participants <- length(excluded_participants)
 
 tmp <- aggregate(formula = correct_SOC ~ id + sex + age, data = generation, FUN=mean)
 Sex <- table(tmp[["sex"]])
 
-meanAge <- round(mean(tmp[["age"]]),digits=1)
-rangeAge <- paste(range(tmp$age),collapse = "-")
+meanAge <- printnum(mean(tmp$age), digits = 1)
+rangeAge <- paste(range(tmp$age), collapse = "-")
 ```
 
 `r N` participants (`r Sex[["Female"]]` women, with a mean age of `r meanAge` years, range `r rangeAge` years) completed the study (data from `r n.excluded_participants-1` participants could not be used due to a programming error, one participant failed to follow instructions during SRTT). 
@@ -248,7 +250,7 @@ To determine correct responses in the generation task, we computed an individual
 
 ## Procedure
 
-The experiment consisted of three consecutive parts: First, participants worked on a SRTT (the *training phase*), followed by a *generation task* and a postexperimental interview. 
+The experiment consisted of three consecutive parts: First, participants worked on an SRTT (the *training phase*), followed by a *generation task* and a postexperimental interview. 
 In the learning phase, participants in the permuted and random conditions performed a SRTT consisting of 6 blocks with 144 trials each (total of 864 responses). 
 Participants in the no-learning condition performed only 20 random trials to familiarize themselves with the SRTT. 
 SRTT and generation task were run on 17" CRT monitors with a screen resolution of 1024px $\times$ 768px. The viewing distance was approximately 60cm. 
@@ -284,7 +286,7 @@ Finally, participants were thanked and debriefed.
 # Results
 
 For all analyses, a significance criterion of $\alpha = .05$ was used.
-If sphericity was violated in repeated-measures ANOVAs, Greenhouse-Geiser-corrected degrees of freedom and *p* values were used.
+If sphericity was violated in repeated-measures ANOVAs, Greenhouse-Geiser-corrected degrees of freedom and $p$ values were used.
 The raw data (as well as additional supplemental materials) are available from https://github.com/methexp/pdl1.^[
 For all our analyses, we used `r cite_r("r-references.bib")`.
 ]
@@ -292,12 +294,14 @@ For all our analyses, we used `r cite_r("r-references.bib")`.
 
 ## SRTT Training phase
 
-```{r srtt-1, fig.cap="Left: Mean reaction times for permuted (solid line) and random material (dashed line). Right: Mean reaction times for permuted material, split by high-frequency (filled circles) vs. low-frequency locations (open circles). Error bars represent 95% within-subjects CIs."}
 
-# permuted vs. random
+(ref:acquisition-rt) Left: Mean reaction times for permuted (solid line) and random material (dashed line). Right: Mean reaction times for permuted material, split by high-frequency (filled circles) vs. low-frequency locations (open circles). Error bars represent 95% within-subjects CIs.
+
+```{r acquisition-rt, fig.cap = "(ref:acquisition-rt)"}
+# Reaction times during SRTT phase (i.e., training or acquisition)
 tmp <- acquisition[
   acquisition$error == 0 &
-  acquisition$material != "No-learning" &
+  acquisition$material != "No-learning" & # these Ss didn't work on SRTT
   acquisition$trial > 1 &
   acquisition$included_participant,
 ]
@@ -306,8 +310,9 @@ out <- apa_print(
   aov_ez(data = tmp, dv = "SRI", id = "id", between = "material", within = "block")
 )
 
-par(mfrow=c(1,2))
+par(mfrow = c(1, 2))
 
+# left panel: RTs in permuted and random material groups
 apa_lineplot(
   data = tmp
   , id = "id"
@@ -319,17 +324,16 @@ apa_lineplot(
   , args_points = list(pch = c(21, 23), bg = c("grey70", "white"))
   , args_legend = list(legend = c("Permuted", "Random"))
   , ylim = c(475, 650)
-  , jit = 0
+  , jit = .01
 )
 
-
-# permuted, high vs. low frequency locations
+# within the permuted-material group, high vs. low frequency locations can be distinguished
 tmp.perm <- acquisition[
   acquisition$error == 0 &
   acquisition$trial > 1 &
   acquisition$included_participant & 
-  acquisition[["material"]]=="Permuted" & 
-  !is.na(acquisition[["frequency"]]),
+  acquisition$material == "Permuted" & 
+  !is.na(acquisition$frequency),
 ]
 
 out.perm <- apa_print(
@@ -347,17 +351,17 @@ apa_lineplot(
   , args_points = list(pch = c(21, 21))
   , args_legend = list(legend = c("High", "Low"), title = "Location frequency")
   , ylim = c(475, 650)
-  , jit = .0
+  , jit = .01
 )
 ```
 
-The mean RTs obtained over training blocks are shown in the left panel of Figure \@ref(fig:srtt-1), separately for permuted and random material (in this and all following training-phase analyses, we excluded RTs of the first trial of each block and of trials that resulted in an error). 
-Analysing RTs using a 2 (*material*: permuted vs. random) $\times$ 6 (*block number*) ANOVA revealed a significant main effect of *material*, `r out$full_result[["material"]]`, with slower responses for random material than for permuted material, and a significant main effect of *block number*, `r out$full_result[["block"]]`, reflecting practice effects. 
+The mean RTs obtained over training blocks are shown in the left panel of Figure \@ref(fig:acquisition-rt), separately for permuted and random material (in this and all following training-phase analyses, we excluded RTs of the first trial of each block and of trials that resulted in an error). 
+Analysing RTs using a 2 (*material*: permuted vs. random) $\times$ 6 (*block number*) ANOVA revealed a significant main effect of *material*, `r out$full_result$material`, with slower responses for random material than for permuted material, and a significant main effect of *block number*, `r out$full_result[["block"]]`, reflecting practice effects. 
 The factors *material* and *block number* did not interact, `r out$full_result[["material_block"]]`, indicating that any knowledge was acquired already during the first block. 
 
 For the group with permuted material, some locations were presented twice within each pseudo-sequence. 
-The right panel of Figure \@ref(fig:srtt-1) shows the mean RTs for these two types of stimuli. A 2 (*frequency*: high vs. low) $\times$ 6 (*block number*) ANOVA revealed a main effect of *frequency*, `r out.perm[["frequency"]]`; high-frequency responses were faster than low-frequency responses. 
-The main effect of *block number* was also significant, `r out.perm[["block"]]`, but not the interaction, `r out.perm[["block_frequency"]]`.
+The right panel of Figure \@ref(fig:acquisition-rt) shows the mean RTs for these two types of stimuli. A 2 (*frequency*: high vs. low) $\times$ 6 (*block number*) ANOVA revealed a main effect of *frequency*, `r out.perm$full_result$frequency`; high-frequency responses were faster than low-frequency responses. 
+The main effect of *block number* was also significant, `r out.perm$full_result$block`, but not the interaction, `r out.perm$full_result$block_frequency`.
 These findings suggest that participants in the *permuted* condition acquired some form of simple response-location frequency knowledge that benefitted their SRTT performance, and especially so for the more frequent responses.
 
 ## Generation task
@@ -373,13 +377,18 @@ Because we only used pseudo-random sequences in this study, we defined that, giv
 the location that was most frequently presented after these two locations during training as being the "correct" response.
 For the *no-learning* condition, correct responses were computed on the basis of sequences identical to those used in the *random* group.
 ]
-Figure \@ref(fig:figure-2) depicts the pattern of correctly generated triplets as a function of generation task, material, and PD instruction.
+Figure \@ref(fig:generation-soc) depicts the pattern of correctly generated triplets as a function of generation task, material, and PD instruction.
  
 
 ### Correctly generated second-order transitions
 
-```{r figure-2, fig.cap="Proportions of correctly generated triplets during PD generation task (chance level = .2). Error bars represent 95% CIs."}
 
+
+(ref:generation-soc) Proportions of correctly generated triplets during PD generation task (chance level = .2). Error bars represent 95% CIs.
+
+```{r generation-soc, fig.cap = "(ref:generation-soc)"}
+# proportin of correctly generated triplets in the generation task
+# excluding repetitions, and trials after repetitions
 tmp <- generation[
   generation$included_participant &
   generation$trial > 2 &
@@ -387,95 +396,85 @@ tmp <- generation[
   generation$post_repetition == 0, 
 ]
 
+# visualize
+apa_barplot(
+  data = tmp
+  , id = "id"
+  , dv = "correct_SOC"
+  , ylab = "Proportion correct generation"
+  , factors = c("material","PD_instruction", "generation")
+  , ylim = c(0, 1)
+  , main = c("Free generation", "Cued generation")
+  , intercept = .2
+)
 
+# aggregate once, because many, many ANOVAs will follow
 tmp2 <- aggregate(
   formula = correct_SOC ~ id + material + generation + order + PD_instruction
   , data = tmp
   , FUN = mean
 )
 
+# ANOVA for complete design
 out <- apa_print(
   aov_ez(data = tmp2, id = "id", dv = "correct_SOC", between = c("material", "generation", "order"), within = "PD_instruction")
 )
 
-
-par(mfrow = c(1, 2))
-
-# separate analysis for free generation
-tmp.a<-tmp2[tmp2[["generation"]]=="Free",]
-out.a<-apa_print(aov_ez(data=tmp.a,id="id",dv="correct_SOC",between=c("material","order"),within=c("PD_instruction")))
-
-# separate analysis for free generation, but without the no-learning condition
-tmp.a2<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["material"]] != "No-learning",]
-out.a2<-apa_print(aov_ez(data=tmp.a2,id="id",dv="correct_SOC",between=c("material","order"),within=c("PD_instruction")))
-
-# separate analysis for free generation, no-learning
-tmp.ar<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["material"]] == "No-learning",]
-out.ar<-apa_print(aov_ez(data=tmp.ar,id="id",dv="correct_SOC",between=c("order"),within=c("PD_instruction")))
-
-
-# separate analysis for free generation, exclusion
-tmp.ae<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Exclusion",]
-out.ae<-apa_print(aov_ez(data=tmp.ae,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, exclusion, perm vs 0
-tmp.aep0<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Exclusion" & tmp2[["material"]]!="Random", ]
-out.aep0<-apa_print(aov_ez(data=tmp.aep0,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, exclusion, perm vs rand
-tmp.aepr<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Exclusion" & tmp2[["material"]]!="No-learning", ]
-out.aepr<-apa_print(aov_ez(data=tmp.aepr,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, exclusion, rand vs 0
-tmp.aer0<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Exclusion" & tmp2[["material"]]!="Permuted", ]
-out.aer0<-apa_print(aov_ez(data=tmp.aer0,id="id",dv="correct_SOC",between=c("material","order")))
-
-
-# separate analysis for free generation, inclusion
-tmp.ai<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Inclusion",]
-out.ai<-apa_print(aov_ez(data=tmp.ai,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, inclusion, perm vs 0
-tmp.aip0<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Inclusion" & tmp2[["material"]]!="Random", ]
-out.aip0<-apa_print(aov_ez(data=tmp.aip0,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, inclusion, perm vs rand
-tmp.aipr<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Inclusion" & tmp2[["material"]]!="No-learning", ]
-out.aipr<-apa_print(aov_ez(data=tmp.aipr,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, exclusion, rand vs 0
-tmp.air0<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["PD_instruction"]] == "Inclusion" & tmp2[["material"]]!="Permuted", ]
-out.air0<-apa_print(aov_ez(data=tmp.air0,id="id",dv="correct_SOC",between=c("material","order")))
-
-# separate analysis for free generation, but without the perm condition
-tmp.a2b<-tmp2[tmp2[["generation"]] == "Free" & tmp2[["material"]] != "Permuted",]
-out.a2b<-apa_print(aov_ez(data=tmp.a2b,id="id",dv="correct_SOC",between=c("material","order"),within=c("PD_instruction")))
-
-apa_barplot(data=tmp.a,id="id",dv="correct_SOC",ylab="Proportion correct generation",factors=c("material","PD_instruction"),ylim=c(0,1), main="Free", intercept=.2, font.main=1)
-
-# only cued generation
-tmp.b<-tmp2[tmp2[["generation"]]=="Cued",]
-out.b<-apa_print(aov_ez(data=tmp.b,id="id",dv="correct_SOC",between=c("material","order"),within=c("PD_instruction")))
-
-apa_barplot(data=tmp.b,id="id",dv="correct_SOC",ylab="Proportion correct generation",factors=c("material","PD_instruction"), ylim=c(0,1), main="Cued", intercept=.2)
-
-
+# separate analysis for free-generation task
+tmp.a <- tmp2[tmp2$generation == "Free", ]
+out.a <- apa_print(
+  aov_ez(data = tmp.a, id = "id", dv = "correct_SOC", between = c("material", "order"), within = "PD_instruction")
+)
 
 # Post-hoc paired comparisons for free generation group
-fit <- aov_ez(data=tmp.a,id="id",dv="correct_SOC",between=c("material","order"),within=c("PD_instruction"))
+fit <- aov_ez(data = tmp.a, id = "id", dv = "correct_SOC", between = c("material", "order"), within = "PD_instruction")
 tukey <- apa_print(pairs(emmeans(fit, specs = "material"), adjust = "tukey"))
 
 
 
+# Analyses for ordinal-PD approach ----
+# (you may want to skip these)
+
+# free generation, only exclusion task
+tmp.ae <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion", ]
+out.ae <- apa_print(aov_ez(data = tmp.ae,id = "id", dv = "correct_SOC", between = c("material", "order")))
+
+# free generation, only exclusion task, permuted vs. no-learning condition
+tmp.aep0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="Random", ]
+out.aep0 <- apa_print(aov_ez(data = tmp.aep0, id = "id", dv = "correct_SOC", between = c("material", "order")))
+
+# free generation, only exclusion task, permuted vs. random material
+tmp.aepr <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="No-learning", ]
+out.aepr <- apa_print(aov_ez(data = tmp.aepr, id = "id", dv = "correct_SOC", between = c("material","order")))
+
+# free generation, exclusion, random vs no-learning condition
+tmp.aer0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="Permuted", ]
+out.aer0 <- apa_print(aov_ez(data = tmp.aer0, id = "id", dv = "correct_SOC", between = c("material","order")))
+
+# free generation, inclusion
+tmp.ai<-tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion",]
+out.ai<-apa_print(aov_ez(data = tmp.ai, id = "id", dv = "correct_SOC", between = c("material","order")))
+
+# free generation, inclusion, permuted vs. no-learning group
+tmp.aip0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="Random", ]
+out.aip0 <- apa_print(aov_ez(data = tmp.aip0, id = "id", dv = "correct_SOC", between = c("material","order")))
+
+# free generation, inclusion, permuted vs. random group
+tmp.aipr <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="No-learning", ]
+out.aipr <- apa_print(aov_ez(data = tmp.aipr, id = "id", dv = "correct_SOC", between=c("material","order")))
+
+# free generation, only exclusion task, random vs. no-learning group
+tmp.air0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="Permuted", ]
+out.air0 <- apa_print(aov_ez(data = tmp.air0, id = "id", dv = "correct_SOC", between = c("material","order")))
 ```
 
 The proportions of correctly generated triplets were analysed using a 3 (*material*: permuted vs. random vs. no-learning)  $\times$  2 (*generation task*: free vs. cued)  $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*order*: inclusion first vs. exclusion first) ANOVA.
-It revealed a main effect of *PD instruction*, `r out$full_result[["PD_instruction"]]`, more correct triplets were generated during inclusion than during exclusion blocks.
+It revealed a main effect of *PD instruction*, `r out$full_result$PD_instruction`, more correct triplets were generated during inclusion than during exclusion blocks.
 This $I > E$ pattern suggests the presence of explicit knowledge, despite the absence of sequence information in the training material.
 
 The ANOVA also revealed an interaction of *material*  $\times$  *generation task*, `r out$full_result[["material_generation"]]`. 
-Analysing only free generation using a 3 (*material*: permuted vs. random vs. no-learning)  $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*order*: inclusion first vs. exclusion first) ANOVA revealed a main effect of *material*, `r out.a[["material"]]` (and again the main effect of *PD instruction*, `r out.a[["PD_instruction"]]`).
-Tukey's HSDs revealed a significant difference between *permuted* and *random*, `r tukey$full_result$permuted_random`, the difference between *permuted* and *no-learning* group trended to be significant, `r tukey$full_result$no_learning_permuted`, *random* and *no-learning* groups did not differ from each other, `r tukey$full_result$no_learning_random`.
+Analysing only free generation using a 3 (*material*: permuted vs. random vs. no-learning)  $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*order*: inclusion first vs. exclusion first) ANOVA revealed a main effect of *material*, `r out.a$material` (and again the main effect of *PD instruction*, `r out.a$PD_instruction`).
+Tukey's HSDs revealed a significant difference between *permuted* and *random*, `r tukey$full_result$Permuted_Random`, the difference between *permuted* and *no-learning* group trended to be significant, `r tukey$full_result$No_learning_Permuted`, *random* and *no-learning* groups did not differ from each other, `r tukey$full_result$No_learning_Random`.
 Analysing only cued generation revealed no effects, suggesting that the free generation task was more sensitive in picking up learning effects on generation performance.
 
 To summarize, there was a main effect of PD instruction as well as an effect of material in the free-generation data; no effects were obtained in the cued-generation data.
@@ -491,13 +490,12 @@ For instance, it can be concluded that both the automatic and the controlled pro
 Also, it can be concluded that the automatic process is greater in one condition if both inclusion and exclusion performance are greater in that condition.
 
 We screened the free-generation data for these data patterns by separately comparing inclusion and exclusion performance across conditions of the material factor.
-Inclusion performance was affected by material, `r out.ai$full_result[["material"]]`: it was greater in the *permuted* than in both the *no-learning* group, `r out.aip0$full_result[["material"]]`, and the *random* group, `r out.aipr$full_result[["material"]]`; in the latter two, performance was comparable, `r out.air0$full_result[["material"]]`.
-Exclusion performance was also affected by material, `r out.ae$full_result[["material"]]`; specifically, it was greater in the *permuted* than the *random* condition, `r out.aepr$full_result[["material"]]`, but did not differ between the other two conditions (*no-learning* vs. *permuted*: `r out.aep0$full_result[["material"]]`; *no-learning* vs. *random*: `r out.aer0$full_result[["material"]]`).
+Inclusion performance was affected by material, `r out.ai$full_result$material`: it was greater in the *permuted* than in both the *no-learning* group, `r out.aip0$full_result$material`, and the *random* group, `r out.aipr$full_result$material`; in the latter two, performance was comparable, `r out.air0$full_result$material`.
+Exclusion performance was also affected by material, `r out.ae$full_result$material`; specifically, it was greater in the *permuted* than the *random* condition, `r out.aepr$full_result$material`, but did not differ between the other two conditions (*no-learning* vs. *permuted*: `r out.aep0$full_result$material`; *no-learning* vs. *random*: `r out.aer0$full_result$material`).
 
 
 Comparing the *permuted* and *no-learning* conditions, performance was greater in the *permuted* group under inclusion instructions but was identical in both groups under exclusion instructions.
 This data pattern implies increased levels of both the automatic and the controlled process in the permuted as compared to the no-learning condition.
-
 Comparing the *permuted* and *random* conditions, performance was greater in the *permuted* group under both inclusion and exclusion instructions. 
 This data pattern implies an increase in the automatic process in the permuted as compared to the random condition but no effect on controlled process.
 
@@ -542,21 +540,18 @@ As a consequence, the bias to avoid recent locations would apply more strongly t
 This could account for the above finding that high-frequency locations were generated at below-chance levels in the cued generation task, and for the suppressed levels of correct performance in the permuted condition in that task.
 
 
-```{r figure-6, fig.cap="Proportions of locations generated in the cued generation task that were presented as a cue on their respective trial, separately for the first and the second generation block (chance level = .6). Error bars represent 95% CIs."}
 
-# reversals included
+(ref:was-cue-including-reversals) Proportions of locations generated in the cued generation task that were presented as a cue on their respective trial, separately for the first and the second generation block (chance level = .6). Error bars represent 95% CIs.
+
+```{r was-cue-including-reversals, fig.cap = "(ref:was-cue-including-reversals)"}
+# Analyze whether participants responded with locations that were also presented
+# as a cue on the respective trial (in the cued-generation task)
+
 tmp <- generation[
   generation$included_participant &
   generation[["repetition"]] == 0 &
-  generation[["generation"]] == "Cued"
-  ,
+  generation$generation == "Cued",
 ]
-
-model <- aov_ez(data = tmp, id = "id", dv = "was_cue", between=c("material", "order"), within = "PD_instruction")
-out <- apa_print(model)
-
-# post hoc tests
-tukey <- apa_print(pairs(emmeans(model, specs = "material")))
 
 apa_barplot(
    data = tmp
@@ -567,53 +562,67 @@ apa_barplot(
   , ylim = c(0, 1)
   , intercept = .6
   , main = c("First block", "Second block")
-  , args_legend = list(plot = c(TRUE, FALSE))
+  , args_legend = list(plot = c(TRUE, FALSE)) # plot legend in left (not right) plot
 )
+
+# ANOVA for full design
+model <- aov_ez(data = tmp, id = "id", dv = "was_cue", between = c("material", "order"), within = "PD_instruction")
+out <- apa_print(model)
+
+# post-hoc pairwise comparisons
+tukey <- apa_print(pairs(emmeans(model, specs = "material")))
+
 
 # analyse blocks separately (extract only `full_result` to output object)
 out_1st <- apa_print(
-  aov_ez(data = tmp[tmp[["block"]] == "first", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
+  aov_ez(data = tmp[tmp$block == "first", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
 )$full_result
 
 out_2nd <- apa_print(
-  aov_ez(data = tmp[tmp[["block"]] == "second",], id = "id", dv = "was_cue", between = c("material","PD_instruction"))
+  aov_ez(data = tmp[tmp$block == "second",], id = "id", dv = "was_cue", between = c("material","PD_instruction"))
 )$full_result
 ```
 
-For the cued generation task, Figure \@ref(fig:figure-6) shows the proportion of response locations that were also presented as a cue on their respective trial.
+For the cued generation task, Figure \@ref(fig:was-cue-including-reversals) shows the proportion of response locations that were also presented as a cue on their respective trial.
 With three to five cues presented on each trial (and direct repetitions prohibited and excluded from analyses),
 chance level of generating a location that had just been presented equalled $3/5 = .6$.
 
-A 3 (*material*: permuted, random, no-learning) $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*block order*: inclusion first vs. exclusion first) ANOVA revealed a main effect of *material*, `r out$full_result[["material"]]`.
-Tukey's HSDs revealed a significant difference between the *permuted* and *no-learning* groups, `r tukey$full_result$no_learning_permuted`, all other *p*s > .24.
-The ANOVA also revealed a main effect of *PD instruction*, `r out$full_result[["PD_instruction"]]`: more repetitions of cue locations were generated under exclusion conditions. 
-This effect was qualified by an interaction *PD instruction* $\times$ *block order*, `r out$full_result[["order_instruction"]]`, which indicates that the effect of PD instruction differed between participants who worked under inclusion instructions in the first generation block and under exclusion instructions in the second block and those who received the PD instructions in the reverse order. To further explore this interaction, we analysed first and second blocks using separate ANOVAs, thus turning the *PD instruction* factor into a between-subjects factor. 
-In the first block, only the main effect of *material* turned out to be significant, `r out_1st[["material"]]`. 
-In the second block, only the main effect of *PD instruction* was significant, `r out_2nd[["PD_instruction"]]`.^[
-This data pattern remained even after excluding reversals: Analysing only the first block, only the main effect of *material* trended to be significant, `r out_1st[["material"]]`. Analysing only the second block revealed a main effect of *PD instruction*, `r out_2nd[["PD_instruction"]]`.
+A 3 (*material*: permuted, random, no-learning) $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*block order*: inclusion first vs. exclusion first) ANOVA revealed a main effect of *material*, `r out$full_result$material`.
+Tukey's HSDs revealed a significant difference between the *permuted* and *no-learning* groups, `r tukey$full_result$No_learning_Permuted`, all other *p*s > .24.
+The ANOVA also revealed a main effect of *PD instruction*, `r out$full_result$PD_instruction`: more repetitions of cue locations were generated under exclusion conditions. 
+This effect was qualified by an interaction *PD instruction* $\times$ *block order*, `r out$full_result$order_PD_instruction`, which indicates that the effect of PD instruction differed between participants who worked under inclusion instructions in the first generation block and under exclusion instructions in the second block and those who received the PD instructions in the reverse order. To further explore this interaction, we analysed first and second blocks using separate ANOVAs, thus turning the *PD instruction* factor into a between-subjects factor. 
+In the first block, only the main effect of *material* turned out to be significant, `r out_1st$material`. 
+In the second block, only the main effect of *PD instruction* was significant, `r out_2nd$PD_instruction`.^[
+This data pattern remained even after excluding reversals: Analysing only the first block, only the main effect of *material* trended to be significant, `r out_1st$material`. Analysing only the second block revealed a main effect of *PD instruction*, `r out_2nd$PD_instruction`.
 ]
 
-```{r fig.cap = "Proportions of locations generated in the cued generation task that were presented as cues on this trial, excluding reversals. Error bars represent 95% CIs."}
-# Reversals excluded ----
+
+
+(ref:was-cue-excluding-reversals) Proportions of locations generated in the cued generation task that were presented as cues on this trial, excluding reversals. Error bars represent 95% CIs.
+
+```{r was-cue-excluding-reversals, fig.cap = "(ref:was-cue-excluding-reversals)"}
+# do the same analyses, but this time exclude reversals
 tmp <- generation[
   generation$included_participant &
   generation[["trial"]] > 1 &
   generation[["repetition"]] == 0 &
   generation[["reversal"]] == 0 &
-  generation[["generation"]] == "Cued"
+  generation$generation == "Cued"
   ,
 ]
 
+# ANOVA for full design
 out <- apa_print(
   aov_ez(data = tmp, id = "id", dv = "was_cue", between = c("material", "order"), within = "PD_instruction")
 )
 
+# separate analyses for first vs. second generation block
 out_1st <- apa_print(
-  aov_ez(data=tmp[tmp[["block"]]=="first",],id="id",dv="was_cue",between=c("material","PD_instruction"))
+  aov_ez(data = tmp[tmp$block=="first", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
 )
 
 out_2nd <- apa_print(
-  aov_ez(data=tmp[tmp[["block"]]=="second",],id="id",dv="was_cue",between=c("material","PD_instruction"))
+  aov_ez(data = tmp[tmp$block=="second", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
 )
 ```
 
@@ -677,7 +686,7 @@ In those cases, baseline performance may differ in inclusion and exclusion instr
 Under those circumstances, the ordinal PD approach is no longer valid [@hirshman_ordinal_2004].^[
 The ordinal PD approach assumes that baseline performance does not differ across conditions or tasks (see Hirshman, 2004, p.559, section "Comparison of the Current Approach and the Process-Dissociation Procedure" and Footnote 8). Such baseline differences may arise from different guessing or response bias, and they invalidate the conclusions that can be drawn from the comparison of performance in conditions. This is because the performance differences between conditions or tasks that are used to draw conclusions about differences in automatic and/or controlled processes may instead reflect baseline differences due to guessing or response bias.
 ]
-In other words, given the possible influence of response tendencies and their interaction with properties of the material, we cannot draw conclusions about the relative contribution of implicit and explicit knowledge by simply comparing inclusion and exclusion performance, be it directly (e.g., $I>E$), across experimental conditions (e.g., $E_A>E_B$), or with a baseline (e.g., $E>B$).
+In other words, given the possible influence of response tendencies and their interaction with properties of the material, we cannot draw conclusions about the relative contribution of implicit and explicit knowledge by simply comparing inclusion and exclusion performance, be it directly (e.g., $I > E$), across experimental conditions (e.g., $E_A > E_B$), or with a baseline (e.g., $E > B$).
 Instead, it is necessary to quantify the unwanted extraneous influence and separate it from the experimental effects of interest.
 This can be done by extending the basic PD design and model.
 
@@ -714,13 +723,13 @@ The extended model allows us to quantify the effect of training with permuted ma
 We used the random group as the empirical control condition; this is equivalent to the assumption that whatever affects performance in the random group can be subsumed as nuisance factors.
 Estimates of $R_{inclusion}$ and $R_{exclusion}$ therefore reflect generation performance in the random group, $R_{inclusion} = .251$ and $R_{exclusion} = .228$.
 Differences between the random and permuted condition are then reflected in the parameters for controlled and automatic processes.
-Results of the extended model suggests that training with permuted material affected the automatic process, $A = .047, \Delta G^2_{(df=1)} = 16.44, p<.001$, but did not affect the controlled process, $C = .001, \Delta G^2_{(df=1)} = 0.004, p=.95$.
+Results of the extended model suggests that training with permuted material affected the automatic process, $A = .047$, $\Delta G^2_{(df=1)} = 16.44$, $p < .001$, but did not affect the controlled process, $C = .001$, $\Delta G^2_{(df=1)} = 0.004$, $p=.95$.
 The effect on the automatic process -- implicit knowledge -- reflects the location frequency effect, and it is consistent with the finding that participants responded faster to high-frequency than to low-frequency locations during SRTT training.
 The extended model indicates the absence of an effect on explicit knowledge.
 The nuisance parameters capture the difference between inclusion and exclusion performance in both the random and permuted group that was interpreted as evidence for explicit knowledge in both the ordinal PD approach as well as in the original model equations.
 
 Note that the levels of generation performance in the control condition can serve as valid baselines -- and the  controlled and automatic parameters can be valid estimates -- only to the degree that the processes captured by the nuisance parameters are independent from explicit and implicit knowledge processes. 
-In other words, the extended model requires additional assumptions, namely that the processes underlying the parameters $C$ and $A$ are independent from the nuisance processes (e.g., guessing, response bias) that are reflected in the new parameters $R_{inclusion}$ and $R_{exclusion}$.
+In other words, the extended model requires additional assumptions, namely that the processes underlying the parameters $C$ and $A$ are independent from the nuisance processes (e.g., guessing, response bias) that are reflected in the new parameters $R_{\mathrm{Inclusion}}$ and $R_{\mathrm{Exclusion}}$.
 These assumptions are as of yet untested, and future research is needed to supply empirical evidence as to whether these new independence assumptions are met.
 
 ## Free versus cued generation
@@ -804,3 +813,8 @@ r_refs(file = "r-references.bib")
 
 <div id = "refs"></div>
 \endgroup
+
+```{r echo = FALSE, results = 'asis'}
+render_appendix('appendix.rmd')
+```
+
