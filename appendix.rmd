@@ -4,6 +4,10 @@ editor_options:
   chunk_output_type: console
 ---
 
+
+(ref:table-caption) Means ($M$) and standard errors ($\mathit{SE}$) of proportion of correctly generated second-order conditionals (SOCs).
+
+
 ```{r}
 tmp <- generation[
   generation$included_participant &
@@ -26,6 +30,11 @@ tab <- merge(means, SEs)
 tab <- cbind(tab[tab$PD_instruction == "Inclusion", ], tab[tab$PD_instruction == "Exclusion", c("M", "SE")])
 tab$PD_instruction <- NULL
 
+tab$material <- gsub(tab$material, pattern = "-", replacement = " ", fixed = TRUE)
+tab$generation <- as.character(tab$generation)
+tab$generation[duplicated(paste0(tab$material, tab$generation))] <- ""
+tab$material[duplicated(tab$material)] <- ""
+
 
 variable_labels(tab) <- c(
   material = "Material"
@@ -39,7 +48,10 @@ apa_table(
   tab
   , row.names = FALSE
   , col_spanners = list(Inclusion = c(4, 5), Exclusion = c(6, 7))
-  , caption = "Means and standard errors of proportion of correctly generated second-order conditionals."
+  , caption = "(ref:table-caption)"
+  , placement = "h"
+  , midrules = seq(4, 12, 4)
+  , format.args = list(gt1 = FALSE) # suppress leading zeros
 )
 
 

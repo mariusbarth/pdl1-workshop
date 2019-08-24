@@ -36,12 +36,10 @@ footnotelist      : no
 linenumbers       : yes
 mask              : no
 draft             : no
+appendix          : "appendix.rmd"
 documentclass     : "apa6"
 classoption       : "man"
-appendix          : "appendix.rmd"
-output            : papaja::apa6_pdf
-editor_options: 
-  chunk_output_type: console
+output            : papaja::apa6_word
 ---
 
 ```{r setup, include = FALSE}
@@ -51,14 +49,25 @@ library("afex")
 library("emmeans")
 ```
 
-```{r analysis-preferences}
+```{r preferences}
 # Seed for random number generation
 set.seed(42)
 knitr::opts_chunk$set(
   cache.extra = knitr::rand_seed
   , message = FALSE
   , warning = FALSE
+  , fig.width = 8.8 # my personal taste
+  , fig.height = 4.6
 )
+
+# Ensure that par()-settings are retained across chunks
+knitr::opts_knit$set(global.par = TRUE)
+```
+
+```{r global-par}
+# Define a function that sets desired global plot defaults
+# (in order to work, this call needs to be in a separate code chunk)
+par(font.main = 1, las = 1)
 ```
 
 Implicit learning refers to the ability to adapt to regularities inherent in the environment in the absence of conscious awareness about the ongoing learning process itself or about the outcome of what is learned. 
@@ -84,9 +93,10 @@ After SRTT training, participants are asked to generate a sequence of responses 
 To the degree that explicit knowledge is available, the proportion of generated responses that match the learned sequence should differ between inclusion and exclusion.
 To the degree that implicit knowledge is available, the proportion of matching responses in the exclusion condition should be greater than a chance baseline or control condition.
 In one group (i.e., RSI = 0 ms), participants were better than chance in their ability to reproduce the regularity in the sequence, even under exclusion instructions (i.e., performance under exclusion condition, $E$, was above a chance baseline $B$, $E>B$), a finding that was interpreted as reflecting sequence knowledge.
-However, performance under inclusion ($I$) and exclusion instructions was identical (i.e., $I=E$), a finding that is interpreted as indicating the absence of explicit knowledge and instead suggests that the sequence knowledge was fully implicit.^[
+However, performance under inclusion ($I$) and exclusion instructions was identical (i.e., $I=E$), a finding that is interpreted as indicating the absence of explicit knowledge and instead suggests that the sequence knowledge was fully implicit.[^control-sequence-designs]
+
+[^control-sequence-designs]:
 Note that the $E>B$ pattern could not be replicated in other studies [@wilkinson_intentional_2004; @norman_fringe_2006] that, as a baseline, compared generation performance with that for a *control sequence* instead of an a-priori fixed value.
-]
 
 The PD procedure is a simple and elegant way to disentangle controllable and uncontrollable processes, which has been widely used across a wide range of research questions [@yonelinas_processdissociation_2012] and has the potential to address many open questions in the domain of implicit learning and memory. 
 However, some authors have raised concerns suggesting that the assumptions underlying the PD may sometimes turn out to be overly simplified, which, in turn, would threaten the validity of PD results [e.g., @buchner_unbiased_1995; @klauer_invariance_2015; @hirshman_logic_1998; @rouder_hierarchical_2008; @curran_violations_1995].
@@ -132,7 +142,7 @@ In cued generation, on the other hand, on each trial, a small sequence of stimul
 The results obtained with both tasks have been found to diverge: Using free generation task, @destrebecqz_can_2001 reported evidence for implicit knowledge (i.e., exclusion performance was above baseline). 
 In contrast, @wilkinson_intentional_2004 could not replicate this $E>B$ finding using a cued generation task. 
 The type of generation task may explain this discrepancy if cued generation artificially lowers (or free generation artificially boosts) exclusion performance [but see @fu_implicit_2008, for a reward-based explanation]. 
-Alternatively, the failure to find E>B in cued generation may be taken as evidence for the suboptimal sensitivity of the cued generation task.
+Alternatively, the failure to find $E>B$ in cued generation may be taken as evidence for the suboptimal sensitivity of the cued generation task.
 The present study compares free and cued generation tasks and their ability to detect learning of sequence-unspecific properties.
 
 ### Response tendencies and subjective intuitions about randomness
@@ -177,7 +187,7 @@ To the degree that response tendencies lead to deviations from chance level, thi
 
 ## Design
 
-The study realized a 3 (*material*: permuted vs. random vs. no-learning) $\times$ 2 (*generation task*: free vs. cued generation) $\times$ 2 (*PD instruction*: inclusion vs. exclusion) $\times$ 2 (*block order*: inclusion first vs. exclusion first) design with repeated measures on the instruction factor. 
+The study realized a 3 (*material*: permuted, random, no-learning) $\times$ 2 (*generation task*: free vs. cued generation) $\times$ 2 (*PD instruction*: inclusion vs. exclusion) $\times$ 2 (*block order*: inclusion first vs. exclusion first) design with repeated measures on the instruction factor. 
 
 ## Participants
 
@@ -223,7 +233,7 @@ N <- length(unique(generation$id))
 n.excluded_participants <- length(excluded_participants)
 
 tmp <- aggregate(formula = correct_SOC ~ id + sex + age, data = generation, FUN=mean)
-Sex <- table(tmp[["sex"]])
+Sex <- table(tmp$sex)
 
 meanAge <- printnum(mean(tmp$age), digits = 1)
 rangeAge <- paste(range(tmp$age), collapse = "-")
@@ -254,7 +264,7 @@ The experiment consisted of three consecutive parts: First, participants worked 
 In the learning phase, participants in the permuted and random conditions performed a SRTT consisting of 6 blocks with 144 trials each (total of 864 responses). 
 Participants in the no-learning condition performed only 20 random trials to familiarize themselves with the SRTT. 
 SRTT and generation task were run on 17" CRT monitors with a screen resolution of 1024px $\times$ 768px. The viewing distance was approximately 60cm. 
-A horizontal sequence of six white squares (56px × 56px) was presented on a grey screen. The distance between squares was 112px. 
+A horizontal sequence of six white squares (56px $\times$ 56px) was presented on a grey screen. The distance between squares was 112px. 
 Each screen location corresponded to a key on a QWERTZ keyboard (from left to right Y, X, C, B, N, M).
 Participants had to respond whenever a square's color changed from white to red by pressing the corresponding key. 
 They were instructed to place the left ring-, middle- and index fingers on the keys Y, X and C. 
@@ -287,9 +297,10 @@ Finally, participants were thanked and debriefed.
 
 For all analyses, a significance criterion of $\alpha = .05$ was used.
 If sphericity was violated in repeated-measures ANOVAs, Greenhouse-Geiser-corrected degrees of freedom and $p$ values were used.
-The raw data (as well as additional supplemental materials) are available from https://github.com/methexp/pdl1.^[
+The raw data (as well as additional supplemental materials) are available from https://github.com/methexp/pdl1.[^analysis-software]
+
+[^analysis-software]:
 For all our analyses, we used `r cite_r("r-references.bib")`.
-]
 
 
 ## SRTT Training phase
@@ -306,10 +317,6 @@ tmp <- acquisition[
   acquisition$included_participant,
 ]
 
-out <- apa_print(
-  aov_ez(data = tmp, dv = "SRI", id = "id", between = "material", within = "block")
-)
-
 par(mfrow = c(1, 2)) # place two different plots side-by-side
 
 # left panel: RTs in permuted and random material groups
@@ -324,7 +331,7 @@ apa_lineplot(
   , args_points = list(pch = c(21, 23), bg = c("grey70", "white"))
   , args_legend = list(legend = c("Permuted", "Random"))
   , ylim = c(475, 650)
-  , jit = .01
+  , jit = .05
 )
 
 # within the permuted-material group, high vs. low frequency locations can be distinguished
@@ -351,7 +358,12 @@ apa_lineplot(
   , args_points = list(pch = c(21, 21))
   , args_legend = list(legend = c("High", "Low"), title = "Location frequency")
   , ylim = c(475, 650)
-  , jit = .01
+  , jit = .05
+)
+
+
+out <- apa_print(
+  aov_ez(data = tmp, dv = "SRI", id = "id", between = "material", within = "block")
 )
 ```
 
@@ -372,12 +384,14 @@ For each of the 120 trials, a response *triplet* consisted of the previous two l
 (in the cued generation condition, the response triplet consisted of the last two cue locations and the current response location;
 in the free generation condition, the response triplet consisted of the previous two response locations as well as the current response location;
 for the first two trials of each generation block, the locations of the corresponding cue trials were used).
-We calculated the proportion of triplets that were consistent with training sequences (see Appendix A).^[
+We calculated the proportion of triplets that were consistent with training sequences (see Appendix A).[^definition-correct]
+Figure \@ref(fig:generation-soc) depicts the pattern of correctly generated triplets as a function of generation task, material, and PD instruction.
+
+[^definition-correct]:
 Because we only used pseudo-random sequences in this study, we defined that, given the last two locations,
 the location that was most frequently presented after these two locations during training as being the "correct" response.
 For the *no-learning* condition, correct responses were computed on the basis of sequences identical to those used in the *random* group.
-]
-Figure \@ref(fig:generation-soc) depicts the pattern of correctly generated triplets as a function of generation task, material, and PD instruction.
+
  
 
 ### Correctly generated second-order transitions
@@ -387,8 +401,8 @@ Figure \@ref(fig:generation-soc) depicts the pattern of correctly generated trip
 (ref:generation-soc) Proportions of correctly generated triplets during PD generation task (chance level = .2). Error bars represent 95% CIs.
 
 ```{r generation-soc, fig.cap = "(ref:generation-soc)"}
-# proportin of correctly generated triplets in the generation task
-# excluding repetitions, and trials after repetitions
+# proportion of correctly generated triplets in the generation task
+# excluding repetitions and trials after repetitions
 tmp <- generation[
   generation$included_participant &
   generation$trial > 2 &
@@ -426,46 +440,10 @@ out.a <- apa_print(
   aov_ez(data = tmp.a, id = "id", dv = "correct_SOC", between = c("material", "order"), within = "PD_instruction")
 )
 
-# Post-hoc paired comparisons for free generation group
+# Post-hoc paired comparisons for free-generation group
 fit <- aov_ez(data = tmp.a, id = "id", dv = "correct_SOC", between = c("material", "order"), within = "PD_instruction")
 tukey <- apa_print(pairs(emmeans(fit, specs = "material"), adjust = "tukey"))
 
-
-
-# Analyses for ordinal-PD approach ----
-# (you may want to skip these)
-
-# free generation, only exclusion task
-tmp.ae <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion", ]
-out.ae <- apa_print(aov_ez(data = tmp.ae,id = "id", dv = "correct_SOC", between = c("material", "order")))
-
-# free generation, only exclusion task, permuted vs. no-learning condition
-tmp.aep0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="Random", ]
-out.aep0 <- apa_print(aov_ez(data = tmp.aep0, id = "id", dv = "correct_SOC", between = c("material", "order")))
-
-# free generation, only exclusion task, permuted vs. random material
-tmp.aepr <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="No-learning", ]
-out.aepr <- apa_print(aov_ez(data = tmp.aepr, id = "id", dv = "correct_SOC", between = c("material","order")))
-
-# free generation, exclusion, random vs no-learning condition
-tmp.aer0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Exclusion" & tmp2$material!="Permuted", ]
-out.aer0 <- apa_print(aov_ez(data = tmp.aer0, id = "id", dv = "correct_SOC", between = c("material","order")))
-
-# free generation, inclusion
-tmp.ai<-tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion",]
-out.ai<-apa_print(aov_ez(data = tmp.ai, id = "id", dv = "correct_SOC", between = c("material","order")))
-
-# free generation, inclusion, permuted vs. no-learning group
-tmp.aip0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="Random", ]
-out.aip0 <- apa_print(aov_ez(data = tmp.aip0, id = "id", dv = "correct_SOC", between = c("material","order")))
-
-# free generation, inclusion, permuted vs. random group
-tmp.aipr <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="No-learning", ]
-out.aipr <- apa_print(aov_ez(data = tmp.aipr, id = "id", dv = "correct_SOC", between=c("material","order")))
-
-# free generation, only exclusion task, random vs. no-learning group
-tmp.air0 <- tmp2[tmp2$generation == "Free" & tmp2$PD_instruction == "Inclusion" & tmp2$material!="Permuted", ]
-out.air0 <- apa_print(aov_ez(data = tmp.air0, id = "id", dv = "correct_SOC", between = c("material","order")))
 ```
 
 The proportions of correctly generated triplets were analysed using a 3 (*material*: permuted vs. random vs. no-learning)  $\times$  2 (*generation task*: free vs. cued)  $\times$  2 (*PD instruction*: inclusion vs. exclusion)  $\times$  2 (*order*: inclusion first vs. exclusion first) ANOVA.
@@ -484,15 +462,7 @@ Next, we will apply two different PD analysis stategies to these data to investi
 
 ### Ordinal PD
 
-We first applied the ordinal PD approach [@hirshman_ordinal_2004]. 
-It proposes a model-free analysis strategy of PD data by deriving four critical data patterns of inclusion and exclusion performance changes across two conditions that imply differences in automatic and controlled processes between the conditions.
-For instance, it can be concluded that both the automatic and the controlled processes are stronger in one condition if inclusion performance is greater in that condition but exclusion performance is comparable in both conditions.
-Also, it can be concluded that the automatic process is greater in one condition if both inclusion and exclusion performance are greater in that condition.
-
-We screened the free-generation data for these data patterns by separately comparing inclusion and exclusion performance across conditions of the material factor.
-Inclusion performance was affected by material, `r out.ai$full_result$material`: it was greater in the *permuted* than in both the *no-learning* group, `r out.aip0$full_result$material`, and the *random* group, `r out.aipr$full_result$material`; in the latter two, performance was comparable, `r out.air0$full_result$material`.
-Exclusion performance was also affected by material, `r out.ae$full_result$material`; specifically, it was greater in the *permuted* than the *random* condition, `r out.aepr$full_result$material`, but did not differ between the other two conditions (*no-learning* vs. *permuted*: `r out.aep0$full_result$material`; *no-learning* vs. *random*: `r out.aer0$full_result$material`).
-
+[...]
 
 Comparing the *permuted* and *no-learning* conditions, performance was greater in the *permuted* group under inclusion instructions but was identical in both groups under exclusion instructions.
 This data pattern implies increased levels of both the automatic and the controlled process in the permuted as compared to the no-learning condition.
@@ -592,40 +562,7 @@ Tukey's HSDs revealed a significant difference between the *permuted* and *no-le
 The ANOVA also revealed a main effect of *PD instruction*, `r out$full_result$PD_instruction`: more repetitions of cue locations were generated under exclusion conditions. 
 This effect was qualified by an interaction *PD instruction* $\times$ *block order*, `r out$full_result$order_PD_instruction`, which indicates that the effect of PD instruction differed between participants who worked under inclusion instructions in the first generation block and under exclusion instructions in the second block and those who received the PD instructions in the reverse order. To further explore this interaction, we analysed first and second blocks using separate ANOVAs, thus turning the *PD instruction* factor into a between-subjects factor. 
 In the first block, only the main effect of *material* turned out to be significant, `r out_1st$material`. 
-In the second block, only the main effect of *PD instruction* was significant, `r out_2nd$PD_instruction`.^[
-This data pattern remained even after excluding reversals: Analysing only the first block, only the main effect of *material* trended to be significant, `r out_1st$material`. Analysing only the second block revealed a main effect of *PD instruction*, `r out_2nd$PD_instruction`.
-]
-
-
-
-(ref:was-cue-excluding-reversals) Proportions of locations generated in the cued generation task that were presented as cues on this trial, excluding reversals. Error bars represent 95% CIs.
-
-```{r was-cue-excluding-reversals, fig.cap = "(ref:was-cue-excluding-reversals)"}
-# do the same analyses, but this time exclude reversals
-tmp <- generation[
-  generation$included_participant &
-  generation[["trial"]] > 1 &
-  generation[["repetition"]] == 0 &
-  generation[["reversal"]] == 0 &
-  generation$generation == "Cued"
-  ,
-]
-
-# ANOVA for full design
-out <- apa_print(
-  aov_ez(data = tmp, id = "id", dv = "was_cue", between = c("material", "order"), within = "PD_instruction")
-)
-
-# separate analyses for first vs. second generation block
-out_1st <- apa_print(
-  aov_ez(data = tmp[tmp$block=="first", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
-)
-
-out_2nd <- apa_print(
-  aov_ez(data = tmp[tmp$block=="second", ], id = "id", dv = "was_cue", between = c("material", "PD_instruction"))
-)
-```
-
+In the second block, only the main effect of *PD instruction* was significant, `r out_2nd$PD_instruction`.
 
 These results suggest three conclusions: 
 First, the fact that the tendency to avoid generating cued locations was also present in the no-learning condition suggests that it was not acquired during the SRTT training but either reflects pre-experimental response tendencies, or, alternatively, it may reflect a tendency of the cued generation task to bias generation performance against repeating the cue locations.
@@ -683,12 +620,13 @@ These findings illustrate that unwanted influences can affect generation perform
 
 Taken together, the findings suggest that there are several problems with the PD approach in its application to investigating the processes underlying sequence learning when effects of extra-experimental influences on performance cannot be excluded.
 In those cases, baseline performance may differ in inclusion and exclusion instructions and/or across experimental conditions.
-Under those circumstances, the ordinal PD approach is no longer valid [@hirshman_ordinal_2004].^[
-The ordinal PD approach assumes that baseline performance does not differ across conditions or tasks (see Hirshman, 2004, p.559, section "Comparison of the Current Approach and the Process-Dissociation Procedure" and Footnote 8). Such baseline differences may arise from different guessing or response bias, and they invalidate the conclusions that can be drawn from the comparison of performance in conditions. This is because the performance differences between conditions or tasks that are used to draw conclusions about differences in automatic and/or controlled processes may instead reflect baseline differences due to guessing or response bias.
-]
+Under those circumstances, the ordinal PD approach is no longer valid [@hirshman_ordinal_2004].[^hirshman-ordinal-pd]
 In other words, given the possible influence of response tendencies and their interaction with properties of the material, we cannot draw conclusions about the relative contribution of implicit and explicit knowledge by simply comparing inclusion and exclusion performance, be it directly (e.g., $I > E$), across experimental conditions (e.g., $E_A > E_B$), or with a baseline (e.g., $E > B$).
 Instead, it is necessary to quantify the unwanted extraneous influence and separate it from the experimental effects of interest.
 This can be done by extending the basic PD design and model.
+
+[^hirshman-ordinal-pd]:
+The ordinal PD approach assumes that baseline performance does not differ across conditions or tasks (see Hirshman, 2004, p.559, section "Comparison of the Current Approach and the Process-Dissociation Procedure" and Footnote 8). Such baseline differences may arise from different guessing or response bias, and they invalidate the conclusions that can be drawn from the comparison of performance in conditions. This is because the performance differences between conditions or tasks that are used to draw conclusions about differences in automatic and/or controlled processes may instead reflect baseline differences due to guessing or response bias.
 
 ## An extended PD model
 
@@ -707,21 +645,21 @@ Such an extended model allows for the possibility that response tendencies affec
 Similar extensions for capturing extraneous influences have been proposed and demonstrated as necessary and useful in other domains to address similar response-tendency issues [e.g., pre-experimental familiarity, @buchner_unbiased_1995; right-hand bias; @stahl_assessing_2007]. 
 
 The extended model's equations deviate from the original equations (see introduction) by including nuisance parameters that account for baseline performance [along the lines suggested by @buchner_unbiased_1995; @buchner_multinomial_1997]. 
-Because baseline performance may be different under inclusion and exclusion instructions, two different parameters $R_{inclusion}$ and $R_{exclusion}$ are added to the model. 
+Because baseline performance may be different under inclusion and exclusion instructions, two different parameters $R_{\mathrm{Inclusion}}$ and $R_{\mathrm{Exclusion}}$ are added to the model. 
 The equations of the experimental conditions of the extended model are: 
-$p(correct|inclusion, experimental) = C + (1-C)*A + (1-C)(1-A)*R_{inclusion}$,
+$I_\mathrm{Experimental} =  C + (1-C) \cdot A + (1-C) \cdot (1-A) \cdot R_{\mathrm{Inclusion}}$,
 and
-$p(correct|exclusion, experimental) = (1-C)*A + (1-C)(1-A)*R_{exclusion}$.
+$E_\mathrm{Experimental} = (1-C)A + (1-C)(1-A)R_{\mathrm{Exclusion}}$.
 For the empirical control or baseline condition, it would be assumed that only extra-experimental or nuisance factors affect generation performance:
-$p(correct|inclusion, control) = R_{inclusion}$,
+$I_\mathrm{Control} = R_{\mathrm{Inclusion}}$,
 and
-$p(correct|exclusion, control) = R_{exclusion}$.
+$E_\mathrm{Control} = R_{\mathrm{Exclusion}}$.
 
 To illustrate, we applied this model to the permuted and random conditions in the free generation task.
 Recall that both traditional approaches suggested the presence of explicit and implicit knowledge in the permuted group, as well as the presence of explicit knowledge in the random group.
 The extended model allows us to quantify the effect of training with permuted material over a training phase with random material on controlled and automatic processes. 
 We used the random group as the empirical control condition; this is equivalent to the assumption that whatever affects performance in the random group can be subsumed as nuisance factors.
-Estimates of $R_{inclusion}$ and $R_{exclusion}$ therefore reflect generation performance in the random group, $R_{inclusion} = .251$ and $R_{exclusion} = .228$.
+Estimates of $R_{\mathrm{Inclusion}}$ and $R_{\mathrm{Exclusion}}$ therefore reflect generation performance in the random group, $R_{\mathrm{Inclusion}} = .251$ and $R_{\mathrm{Exclusion}} = .228$.
 Differences between the random and permuted condition are then reflected in the parameters for controlled and automatic processes.
 Results of the extended model suggests that training with permuted material affected the automatic process, $A = .047$, $\Delta G^2_{(df=1)} = 16.44$, $p < .001$, but did not affect the controlled process, $C = .001$, $\Delta G^2_{(df=1)} = 0.004$, $p=.95$.
 The effect on the automatic process -- implicit knowledge -- reflects the location frequency effect, and it is consistent with the finding that participants responded faster to high-frequency than to low-frequency locations during SRTT training.
@@ -753,7 +691,7 @@ We briefly sketch open research questions posed by the additional independence a
 
 ### On the independence assumptions underlying the extended model
 
-As mentioned above, the extended PD model assumes that response tendencies as modelled by $R_{inclusion}$ and $R_{exclusion}$ are independent of controlled and automatic processes. 
+As mentioned above, the extended PD model assumes that response tendencies as modelled by $R_{\mathrm{Inclusion}}$ and $R_{\mathrm{Exclusion}}$ are independent of controlled and automatic processes. 
 If this assumption is violated, parameter estimates are no longer valid measures of the underlying psychological processes. 
 This possiblity deserves to be taken seriously; in other domains, empirical violations of independence between controlled and automatic processes have been obtained [e.g., @rouder_hierarchical_2008]. 
 The open question is whether response tendencies can be affected by the same properties of the learning material that may also affect implicit and explicit learning.
@@ -761,7 +699,7 @@ There are some findings in the literature that at least suggest such an interact
 For instance, participants tended to show lag effects (reflecting negative recency) in a permuted condition but not in a random condition [@boyer_processing_2005].
 Here, the tendency to avoid generating recent locations interacted with properties of the learning material.
 Perhaps more critically, the present results suggest that in the permuted condition, the bias against generating cued locations was reduced whereas implicit knowledge was enhanced (i.e., participants learned about the frequency with which certain response locations occurred during training).
-If the response bias is reduced in a condition with greater implicit knowledge, then the response bias estimates (i.e., the *R* parameters) obtained from the control condition (where implicit knowledge is lower or entirely absent) will tend to overestimate the response bias in that condition.
+If the response bias is reduced in a condition with greater implicit knowledge, then the response bias estimates (i.e., the $R$ parameters) obtained from the control condition (where implicit knowledge is lower or entirely absent) will tend to overestimate the response bias in that condition.
 The present finding may reflect effects of other factors, but if such an interaction pattern between response tendency and implicit knowledge can be substantiated, it would constitute evidence against the independence assumption. 
 In turn, this would require further elaborating and refining the extended PD paradigm and model.
 
@@ -772,17 +710,20 @@ In our application of the PD model, we aggregated the data across participants, 
 Our results demonstrate that the PD procedure, as commonly applied, yields erroneous conclusions supporting the presence of implicit and/or explicit knowledge, even in the absence of such knowledge.
 Note that such erroneous conclusions about the presence of an influence on parameters are less likely when, instead of aggregating, individual data are analyzed using hierarchical models.
 This is because data aggregation assumes parameter homogeneity across participants, which is likely to be violated in most cases.
-As a consequence of aggregation in the presence of heterogeneity, confidence intervals can be underestimated, and nominal statistical error levels can be violated by statistical tests.^[
+As a consequence of aggregation in the presence of heterogeneity, confidence intervals can be underestimated, and nominal statistical error levels can be violated by statistical tests.[^hierarchical-pd]
+
+[^hierarchical-pd]:
 We applied the hierarchical Bayesian PD model proposed by @rouder_hierarchical_2008 to the present data in order to account for person and item variability. 
 The resulting parameter estimates are available in the supplemental material that can be obtained from https://github.com/methexp/pdl1.
-The results corroborated the findings obtained with the traditional analyses reported above (i.e., $C>0$, $A>.2$, and the ordering of $A$ estimates across conditions).  
-]
+The results corroborated the findings obtained with the traditional analyses reported above (i.e., $C>0$, $A>.2$, and the ordering of $A$ estimates across conditions).
 
 This problem does not arise if hierarchical modeling techniques are used [e.g., @rouder_hierarchical_2008; @klauer_hierarchical_2006; @klauer_hierarchical_2010] that account for the heterogeneity across participants (and items) in their estimates of the parameters' variability.
 Hierarchical models often draw a more realistic picture of the variability of parameter estimates. 
-In all cases in which parameters must be assumed to vary across participants, they should be preferred to the traditional approach of data aggregation.^[
+In all cases in which parameters must be assumed to vary across participants, they should be preferred to the traditional approach of data aggregation.[^dora-christoph]
+
+[^dora-christoph]:
 The use and adoption of hierarchical modeling approaches is currently limited by the availability of general-purpose software [but see, e.g., @matzke_bayesian_2013; @stahl_hmmtree_2007]. 
-]
+
 
 ### Characteristics of response tendencies
 
